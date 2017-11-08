@@ -1,1 +1,7 @@
-include ':app'
+include ':studywithema'
+include ':commons', ":core", ":system"
+include ':datakitapi'
+project(':commons').projectDir=new File('../mCerebrum-Library/commons')
+project(':core').projectDir=new File('../mCerebrum-Library/core')
+project(':system').projectDir=new File('../mCerebrum-Library/system')
+project(':datakitapi').projectDir=new File('../mCerebrum-DataKitAPI/datakitapi')
