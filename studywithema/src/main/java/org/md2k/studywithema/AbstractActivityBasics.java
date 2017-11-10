@@ -59,7 +59,7 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
         SharedPreferences sharedpreferences = getSharedPreferences("permission", Context.MODE_PRIVATE);
         if (sharedpreferences.getBoolean("permission", false) == true) {
             loadConfig();
-            checkUpdate();
+            //checkUpdate();
             connectDataKit();
         } else {
             Permission.requestPermission(this, new PermissionCallback() {
@@ -74,7 +74,7 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
                         finish();
                     } else {
                         loadConfig();
-                        checkUpdate();
+//                        checkUpdate();
                         connectDataKit();
                     }
                 }

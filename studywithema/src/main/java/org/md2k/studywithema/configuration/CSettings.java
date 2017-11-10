@@ -26,7 +26,6 @@ package org.md2k.studywithema.configuration;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class CConfig {
-    public CUI ui;
-    public CSettings settings;
+public class CSettings {
+    CList[] list;
 }

@@ -2,11 +2,14 @@ package org.md2k.studywithema;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import org.md2k.mcerebrum.commons.ui.buttons.ViewButtons;
 import org.md2k.mcerebrum.commons.ui.data_quality.CDataQuality;
 import org.md2k.mcerebrum.commons.ui.data_quality.ResultCallback;
 import org.md2k.mcerebrum.commons.ui.data_quality.UserViewDataQuality;
@@ -34,6 +37,30 @@ public class FragmentHome extends Fragment {
         if(cHomeScreen.privacy!=null){
             loadPrivacy(view);
         }
+        loadButtons(view);
+    }
+    void loadButtons(View view){
+        LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.linear_layout_add);
+        final ViewButtons viewButtons=new ViewButtons(getActivity());
+        LinearLayout.LayoutParams LLParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        viewButtons.setLayoutParams(LLParams);
+        linearLayout.addView(viewButtons);
+        viewButtons.addButton("abc", ContextCompat.getDrawable(getActivity(), R.drawable.ic_error_outline_white_48dp), new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("abc","selected");
+            }
+        });
+/*
+        userViewDataQuality=new UserViewDataQuality(((ActivityMain)getActivity()).dataQualityManager);
+        userViewDataQuality.set(new ResultCallback() {
+            @Override
+            public void onResult(int[] result) {
+                viewButtons.setDataQuality(result);
+            }
+        });
+*/
+
     }
     void loadDataQuality(View view, CDataQuality[] cDataQualities){
         LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.linear_layout_add);

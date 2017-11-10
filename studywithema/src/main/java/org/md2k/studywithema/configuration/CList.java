@@ -26,7 +26,12 @@ package org.md2k.studywithema.configuration;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public class CConfig {
-    public CUI ui;
-    public CSettings settings;
+import org.md2k.datakitapi.source.datasource.DataSource;
+
+public class CList {
+    String id;
+    String title;
+    String input_type;
+    String use_as;
+    DataSource save;
 }
