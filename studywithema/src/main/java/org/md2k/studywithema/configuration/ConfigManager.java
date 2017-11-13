@@ -45,5 +45,8 @@ public class ConfigManager {
     private static String getConfigFile(){
         return Storage.getRootDirectory(MyApplication.getContext(), StorageType.SDCARD_INTERNAL)+"/mCerebrum/"+MyApplication.getContext().getPackageName()+"/config.json";
     }
+    public static String getConfigDirectory(){
+        return Storage.getRootDirectory(MyApplication.getContext(), StorageType.SDCARD_INTERNAL)+"/mCerebrum/"+MyApplication.getContext().getPackageName()+"/";
+    }
 
 }

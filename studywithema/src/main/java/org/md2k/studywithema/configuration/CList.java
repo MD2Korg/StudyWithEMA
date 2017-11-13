@@ -29,9 +29,10 @@ package org.md2k.studywithema.configuration;
 import org.md2k.datakitapi.source.datasource.DataSource;
 
 public class CList {
-    String id;
-    String title;
-    String input_type;
-    String use_as;
-    DataSource save;
+    public String id;
+    public String title;
+    public String input_type;
+    public String[] options;
+    public String use_as;
+    public DataSource save;
 }

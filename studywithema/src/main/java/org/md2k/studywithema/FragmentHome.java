@@ -1,5 +1,8 @@
 package org.md2k.studywithema;
 
+import android.content.ComponentName;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -9,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import org.md2k.mcerebrum.commons.storage.Storage;
 import org.md2k.mcerebrum.commons.ui.buttons.ViewButtons;
 import org.md2k.mcerebrum.commons.ui.data_quality.CDataQuality;
 import org.md2k.mcerebrum.commons.ui.data_quality.ResultCallback;
@@ -16,7 +20,9 @@ import org.md2k.mcerebrum.commons.ui.data_quality.UserViewDataQuality;
 import org.md2k.mcerebrum.commons.ui.data_quality.ViewDataQuality;
 import org.md2k.mcerebrum.commons.ui.privacy.UserViewPrivacyControl;
 import org.md2k.mcerebrum.commons.ui.privacy.ViewPrivacy;
+import org.md2k.studywithema.configuration.CButton;
 import org.md2k.studywithema.configuration.CHomeScreen;
+import org.md2k.studywithema.configuration.ConfigManager;
 
 public class FragmentHome extends Fragment {
     UserViewDataQuality userViewDataQuality;
@@ -40,17 +46,27 @@ public class FragmentHome extends Fragment {
         loadButtons(view);
     }
     void loadButtons(View view){
+        final CButton cButton = ((ActivityMain)getActivity()).cConfig.ui.home_screen.button;
+        if(cButton==null || cButton.list==null || cButton.list.length==0) return;
         LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.linear_layout_add);
         final ViewButtons viewButtons=new ViewButtons(getActivity());
         LinearLayout.LayoutParams LLParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         viewButtons.setLayoutParams(LLParams);
         linearLayout.addView(viewButtons);
-        viewButtons.addButton("abc", ContextCompat.getDrawable(getActivity(), R.drawable.ic_error_outline_white_48dp), new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d("abc","selected");
-            }
-        });
+        for(int i=0;i<cButton.list.length;i++) {
+            Drawable d = Storage.readDrawable(ConfigManager.getConfigDirectory()+cButton.list[i].icon);
+            if(d==null) d=ContextCompat.getDrawable(getActivity(), R.drawable.ic_error_outline_white_48dp);
+            final int finalI = i;
+            viewButtons.addButton(i+1,cButton.list[i].title, d, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent();
+                    intent.setComponent(new ComponentName(cButton.list[finalI].run.package_name, cButton.list[finalI].run.activity));
+                    startActivity(intent);
+                    Log.d("abc", "selected");
+                }
+            });
+        }
 /*
         userViewDataQuality=new UserViewDataQuality(((ActivityMain)getActivity()).dataQualityManager);
         userViewDataQuality.set(new ResultCallback() {

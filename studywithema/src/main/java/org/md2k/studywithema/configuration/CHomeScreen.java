@@ -31,4 +31,5 @@ import org.md2k.mcerebrum.commons.ui.data_quality.CDataQuality;
 public class CHomeScreen {
     public CDataQuality[] data_quality;
     public CPrivacy privacy;
+    public CButton button;
 }

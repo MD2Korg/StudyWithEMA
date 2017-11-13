@@ -1,4 +1,4 @@
-package org.md2k.studywithema;
+package org.md2k.studywithema.configuration;
 /*
  * Copyright (c) 2016, The University of Memphis, MD2K Center
  * - Syed Monowar Hossain <monowar.hossain@gmail.com>
@@ -26,23 +26,8 @@ package org.md2k.studywithema;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import android.content.Context;
-import android.content.Intent;
-
-import org.md2k.mcerebrum.commons.permission.ActivityPermission;
-import org.md2k.mcerebrum.commons.permission.Permission;
-import org.md2k.mcerebrum.core.access.MCerebrum;
-import org.md2k.mcerebrum.core.access.MCerebrumInfo;
-
-public class MyMCerebrumInit extends MCerebrumInfo {
-    @Override
-    public void update(final Context context){
-        MCerebrum.setBackgroundService(context, ServiceStudy.class);
-        if(!Permission.hasPermission(context)){
-            Intent intent = new Intent(context, ActivityPermission.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
-        }
-        MCerebrum.setConfigureActivity(context, ActivitySettings.class);
-    }
+public class CRun {
+    public String package_name;
+    public String activity;
+    public String[] parameter;
 }

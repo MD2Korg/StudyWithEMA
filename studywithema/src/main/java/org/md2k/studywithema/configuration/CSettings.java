@@ -27,5 +27,5 @@ package org.md2k.studywithema.configuration;
  */
 
 public class CSettings {
-    CList[] list;
+    public CList[] list;
 }
