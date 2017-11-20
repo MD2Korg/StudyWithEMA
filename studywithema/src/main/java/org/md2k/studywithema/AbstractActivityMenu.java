@@ -257,7 +257,7 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
     };
     @Override
     public void onResume(){
-        updateStatus();
+        if(hasPermission) updateStatus();
         super.onResume();
     }
     void updateStatus(){

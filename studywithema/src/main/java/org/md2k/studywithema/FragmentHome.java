@@ -18,6 +18,8 @@ import org.md2k.mcerebrum.commons.ui.data_quality.CDataQuality;
 import org.md2k.mcerebrum.commons.ui.data_quality.ResultCallback;
 import org.md2k.mcerebrum.commons.ui.data_quality.UserViewDataQuality;
 import org.md2k.mcerebrum.commons.ui.data_quality.ViewDataQuality;
+import org.md2k.mcerebrum.commons.ui.day.UserViewDay;
+import org.md2k.mcerebrum.commons.ui.day.ViewDay;
 import org.md2k.mcerebrum.commons.ui.privacy.UserViewPrivacyControl;
 import org.md2k.mcerebrum.commons.ui.privacy.ViewPrivacy;
 import org.md2k.studywithema.configuration.CButton;
@@ -27,6 +29,7 @@ import org.md2k.studywithema.configuration.ConfigManager;
 public class FragmentHome extends Fragment {
     UserViewDataQuality userViewDataQuality;
     UserViewPrivacyControl userViewPrivacyControl;
+    UserViewDay userViewDay;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
@@ -43,7 +46,10 @@ public class FragmentHome extends Fragment {
         if(cHomeScreen.privacy!=null){
             loadPrivacy(view);
         }
-        loadButtons(view);
+        if(cHomeScreen.button!=null)
+            loadButtons(view);
+        if(cHomeScreen.day!=null)
+            loadDay(view);
     }
     void loadButtons(View view){
         final CButton cButton = ((ActivityMain)getActivity()).cConfig.ui.home_screen.button;
@@ -100,9 +106,16 @@ public class FragmentHome extends Fragment {
         linearLayout.addView(viewPrivacy);
         userViewPrivacyControl=new UserViewPrivacyControl(viewPrivacy);
         userViewPrivacyControl.set();
-
     }
-
+    void loadDay(View view){
+        LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.linear_layout_add);
+        ViewDay viewDay = new ViewDay(getActivity());
+        LinearLayout.LayoutParams LLParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        viewDay.setLayoutParams(LLParams);
+        linearLayout.addView(viewDay);
+        userViewDay=new UserViewDay(viewDay);
+        userViewDay.set();
+    }
 
     @Override
     public void onDestroyView() {

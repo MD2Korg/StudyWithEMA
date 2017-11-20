@@ -42,6 +42,7 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
     public DataQualityManager dataQualityManager;
     Subscription subscriptionCheckUpdate;
     public boolean isServiceRunning;
+    boolean hasPermission = false;
 
     abstract void createMenu();
 
@@ -58,6 +59,7 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
     void getPermission() {
         SharedPreferences sharedpreferences = getSharedPreferences("permission", Context.MODE_PRIVATE);
         if (sharedpreferences.getBoolean("permission", false) == true) {
+            hasPermission=true;
             loadConfig();
             //checkUpdate();
             connectDataKit();
@@ -73,6 +75,7 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
                         Toasty.error(getApplicationContext(), "StudyWithEMA ... !PERMISSION DENIED !!! Could not continue...", Toast.LENGTH_SHORT).show();
                         finish();
                     } else {
+                        hasPermission=true;
                         loadConfig();
 //                        checkUpdate();
                         connectDataKit();

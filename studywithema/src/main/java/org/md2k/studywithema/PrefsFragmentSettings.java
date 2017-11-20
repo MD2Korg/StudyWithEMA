@@ -118,7 +118,9 @@ public class PrefsFragmentSettings extends PreferenceFragment {
     private DataType getData(DataSource dataSource) {
         try {
             DataSourceClient dataSourceClient = getDataSourceClient(dataSource);
+            Log.d("abc","connected="+DataKitAPI.getInstance(getActivity()).isConnected());
             ArrayList<DataType> dataTypes = DataKitAPI.getInstance(getActivity()).query(dataSourceClient, 1);
+            Log.d("abc","datasource="+dataSource.getType()+" size="+dataTypes.size());
             if (dataTypes.size() == 0) return null;
             return dataTypes.get(0);
         } catch (Exception e) {
@@ -282,10 +284,12 @@ public class PrefsFragmentSettings extends PreferenceFragment {
             public void onSelected(String value) {
                 DataTypeLong d = new DataTypeLong(DateTime.getDateTime(), Long.valueOf(value));
                 try {
+                    Log.d("abc","insert...datasource="+dataSource.getType()+" connected="+DataKitAPI.getInstance(getActivity()).isConnected());
                     DataKitAPI.getInstance(getActivity()).insert(getDataSourceClient(dataSource), d);
                     setSettings();
                 } catch (DataKitException ignored) {
                     Log.d("abc", "error=" + ignored.getMessage());
+                    getActivity().finish();
                 }
             }
         }).show();
@@ -307,9 +311,12 @@ public class PrefsFragmentSettings extends PreferenceFragment {
                 long value = Long.valueOf(date) + Long.valueOf(date);
                 DataTypeLong d = new DataTypeLong(DateTime.getDateTime(), value);
                 try {
+                    Log.d("abc","insert...datasource="+dataSource.getType()+" connected="+DataKitAPI.getInstance(getActivity()).isConnected());
                     DataKitAPI.getInstance(getActivity()).insert(getDataSourceClient(dataSource), d);
                     setSettings();
                 } catch (DataKitException ignored) {
+                    Log.d("abc", "error=" + ignored.getMessage());
+                    getActivity().finish();
                 }
             }
         }).show();
@@ -336,9 +343,12 @@ public class PrefsFragmentSettings extends PreferenceFragment {
                         long value = Long.valueOf(date) + Long.valueOf(time);
                         DataTypeLong d = new DataTypeLong(DateTime.getDateTime(), value);
                         try {
+                            Log.d("abc","insert...datasource="+dataSource.getType()+" connected="+DataKitAPI.getInstance(getActivity()).isConnected());
                             DataKitAPI.getInstance(getActivity()).insert(getDataSourceClient(dataSource), d);
                             setSettings();
                         } catch (DataKitException ignored) {
+                            Log.d("abc", "error=" + ignored.getMessage());
+                            getActivity().finish();
                         }
 
                     }
@@ -354,9 +364,12 @@ public class PrefsFragmentSettings extends PreferenceFragment {
                 if (value == null || value.length() == 0) return;
                 DataTypeString d = new DataTypeString(DateTime.getDateTime(), value);
                 try {
+                    Log.d("abc","insert...datasource="+dataSource.getType()+" connected="+DataKitAPI.getInstance(getActivity()).isConnected());
                     DataKitAPI.getInstance(getActivity()).insert(getDataSourceClient(dataSource), d);
                     setSettings();
                 } catch (DataKitException ignored) {
+                    Log.d("abc", "error=" + ignored.getMessage());
+                    getActivity().finish();
                 }
             }
         }).show();
@@ -375,9 +388,12 @@ public class PrefsFragmentSettings extends PreferenceFragment {
             public void onSelected(String value) {
                 DataTypeString d = new DataTypeString(DateTime.getDateTime(), value);
                 try {
+                    Log.d("abc","insert...datasource="+dataSource.getType()+" connected="+DataKitAPI.getInstance(getActivity()).isConnected());
                     DataKitAPI.getInstance(getActivity()).insert(getDataSourceClient(dataSource), d);
                     setSettings();
                 } catch (DataKitException ignored) {
+                    Log.d("abc", "error=" + ignored.getMessage());
+                    getActivity().finish();
                 }
             }
         }).show();
@@ -394,11 +410,14 @@ public class PrefsFragmentSettings extends PreferenceFragment {
                 try {
                     DataTypeLong d = new DataTypeLong(DateTime.getDateTime(), Long.valueOf(value));
                     try {
+                        Log.d("abc","insert...datasource="+dataSource.getType()+" connected="+DataKitAPI.getInstance(getActivity()).isConnected());
                         DataKitAPI.getInstance(getActivity()).insert(getDataSourceClient(dataSource), d);
                         setSettings();
                     } catch (DataKitException ignored) {
                     }
                 } catch (Exception ignored) {
+                    Log.d("abc", "error=" + ignored.getMessage());
+                    getActivity().finish();
 
                 }
             }
@@ -407,6 +426,7 @@ public class PrefsFragmentSettings extends PreferenceFragment {
 
     @Override
     public void onDestroy() {
+        Log.d("abc","onDestroy()..disconnect");
         DataKitAPI.getInstance(getActivity()).disconnect();
         super.onDestroy();
     }
