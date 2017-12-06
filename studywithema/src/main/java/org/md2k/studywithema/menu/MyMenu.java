@@ -65,7 +65,7 @@ public class MyMenu {
 
     public IProfile[] getHeaderContent(String userTitle, /*UserInfo userInfo, StudyInfo studyInfo, */final ResponseCallBack responseCallBack) {
         IProfile[] iProfiles=new IProfile[1];
-        iProfiles[0]=new ProfileDrawerItem().withName(userTitle).withIcon(R.mipmap.ic_launcher);
+        iProfiles[0]=new ProfileDrawerItem().withName(userTitle).withIcon(R.drawable.mcerebrum_white);
         return iProfiles;
     }
     private static MenuContent[] getMenuContent(CMenu[] cMenu){

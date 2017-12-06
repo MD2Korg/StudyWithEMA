@@ -90,7 +90,7 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         AccountHeader headerResult = new AccountHeaderBuilder()
                 .withActivity(this)
-                .withHeaderBackground(R.drawable.cover_image)
+                .withHeaderBackground(R.drawable.cover_image4)
                 .withCompactStyle(true)
                 .addProfiles(new MyMenu().getHeaderContent(ServerCP.getUserName(getBaseContext()), responseCallBack))
                 .build();

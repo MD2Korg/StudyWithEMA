@@ -113,9 +113,9 @@ public class FragmentHome extends Fragment {
         LinearLayout.LayoutParams LLParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         viewDay.setLayoutParams(LLParams);
         linearLayout.addView(viewDay);
-        userViewDay=new UserViewDay(viewDay);
+   /*     userViewDay=new UserViewDay(viewDay);
         userViewDay.set();
-    }
+   */ }
 
     @Override
     public void onDestroyView() {
