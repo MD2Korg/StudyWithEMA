@@ -38,7 +38,7 @@ public class ActivityMain extends AbstractActivityMenu {
                 break;
 
             case R.id.action_refresh:
-              //TODO
+
          resetDataCollection();
                 break;
         }

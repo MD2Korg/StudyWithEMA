@@ -46,10 +46,11 @@ public class FragmentHome extends Fragment {
         if(cHomeScreen.privacy!=null){
             loadPrivacy(view);
         }
-        if(cHomeScreen.button!=null)
-            loadButtons(view);
         if(cHomeScreen.day!=null)
             loadDay(view);
+        if(cHomeScreen.button!=null)
+            loadButtons(view);
+
     }
     void loadButtons(View view){
         final CButton cButton = ((ActivityMain)getActivity()).cConfig.ui.home_screen.button;
