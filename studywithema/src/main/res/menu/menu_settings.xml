@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+
+    xmlns:serviceApp="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".AutoSenseActivity">
+    <item
+        android:id="@+id/action_refresh"
+        android:icon="@drawable/refresh"
+        serviceApp:showAsAction="ifRoom"
+        android:title="Refresh" />
+
+</menu>
