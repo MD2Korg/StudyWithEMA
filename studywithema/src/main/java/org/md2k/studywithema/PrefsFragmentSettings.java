@@ -140,11 +140,11 @@ public class PrefsFragmentSettings extends PreferenceFragment {
                 c.set(Calendar.MINUTE, (int) (time % 60));
                 time /= 60;
                 c.set(Calendar.HOUR, (int) (time % 24));
-                return DateTime.convertTimeStampToDateTime(c.getTimeInMillis(), "hh:mm:ss aaa");
+                return DateTime.convertTimeStampToDateTime(c.getTimeInMillis(), "h:mm aaa");
             case DATE:
-                return DateTime.convertTimeStampToDateTime(((DataTypeLong) dataType).getSample(), "EEE, d MMM yyyy");
+                return DateTime.convertTimeStampToDateTime(((DataTypeLong) dataType).getSample(), "dd-MMM-yyyy,  (EEEE)");
             case DATE_TIME:
-                return DateTime.convertTimeStampToDateTime(((DataTypeLong) dataType).getSample(), "EEE, d MMM yyyy hh:mm:ss aaa");
+                return DateTime.convertTimeStampToDateTime(((DataTypeLong) dataType).getSample(), "dd-MMM-yyyy,  h:mm aaa,  (EEEE)");
             case NUMBER:
                 return String.valueOf(((DataTypeInt) dataType).getSample());
             case TEXT:
@@ -258,10 +258,7 @@ public class PrefsFragmentSettings extends PreferenceFragment {
     DataSourceClient getDataSourceClient(DataSource dataSource) throws DataKitException {
         DataSourceBuilder dataSourceBuilder = new DataSourceBuilder(dataSource);
         DataSourceClient dataSourceClient;
-        ArrayList<DataSourceClient> dataSourceClients = DataKitAPI.getInstance(getActivity()).find(dataSourceBuilder);
-        if (dataSourceClients.size() == 0) {
             dataSourceClient = DataKitAPI.getInstance(getActivity()).register(dataSourceBuilder);
-        } else dataSourceClient = dataSourceClients.get(0);
         return dataSourceClient;
     }
 
