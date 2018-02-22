@@ -29,20 +29,81 @@ package org.md2k.studywithema;
 import android.content.Context;
 import android.content.Intent;
 
+import org.md2k.datakitapi.DataKitAPI;
+import org.md2k.datakitapi.exception.DataKitException;
+import org.md2k.datakitapi.messagehandler.OnConnectionListener;
+import org.md2k.datakitapi.source.datasource.DataSource;
+import org.md2k.datakitapi.source.datasource.DataSourceBuilder;
+import org.md2k.datakitapi.source.datasource.DataSourceClient;
 import org.md2k.mcerebrum.commons.permission.ActivityPermission;
 import org.md2k.mcerebrum.commons.permission.Permission;
 import org.md2k.mcerebrum.core.access.MCerebrum;
 import org.md2k.mcerebrum.core.access.MCerebrumInfo;
+import org.md2k.studywithema.configuration.CConfig;
+import org.md2k.studywithema.configuration.CList;
+import org.md2k.studywithema.configuration.ConfigManager;
+
+import java.util.ArrayList;
 
 public class MyMCerebrumInit extends MCerebrumInfo {
+    DataKitAPI dataKitAPI;
+
     @Override
-    public void update(final Context context){
+    public void update(final Context context) {
         MCerebrum.setBackgroundService(context, ServiceStudy.class);
-        if(!Permission.hasPermission(context)){
+        if (!Permission.hasPermission(context)) {
             Intent intent = new Intent(context, ActivityPermission.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
         }
         MCerebrum.setConfigureActivity(context, ActivitySettings.class);
+        checkSettings(context);
+    }
+
+    private void setResult(Context context, boolean isPartiallyConfigured, boolean isConfigured) {
+        MCerebrum.setConfigured(context, isPartiallyConfigured);
+        MCerebrum.setConfigureExact(context, isConfigured);
+    }
+
+    private void checkSettings(final Context context) {
+        CConfig cConfig = ConfigManager.read();
+        if (cConfig == null || cConfig.settings == null || cConfig.settings.list == null || cConfig.settings.list.length == 0) {
+            setResult(context, true, true);
+            return;
+        }
+        final CList[] cList = cConfig.settings.list;
+
+
+        dataKitAPI = DataKitAPI.getInstance(context);
+        try {
+            dataKitAPI.connect(new OnConnectionListener() {
+                @Override
+                public void onConnected() {
+                    boolean pc=false, c=true;
+                    for (CList aCList : cList) {
+                        if (isConfigured(aCList.save)) {
+                            pc = true;
+                        } else {
+                            if (aCList.use_as.equalsIgnoreCase("REQUIRED"))
+                                c = false;
+                        }
+                    }
+                    setResult(context, pc, c);
+                    dataKitAPI.disconnect();
+                }
+            });
+        } catch (DataKitException e) {
+            setResult(context, true, true);
+        }
+    }
+
+    private boolean isConfigured(DataSource d) {
+        try {
+            ArrayList<DataSourceClient> dsc = dataKitAPI.find(new DataSourceBuilder(d));
+            if (dsc.size() == 0) return false;
+            return true;
+        } catch (Exception e) {
+            return true;
+        }
     }
 }

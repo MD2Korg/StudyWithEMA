@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.widget.Toolbar;
+import android.widget.Toast;
 
 import com.beardedhen.androidbootstrap.AwesomeTextView;
 import com.beardedhen.androidbootstrap.BootstrapText;
@@ -28,9 +29,11 @@ import org.md2k.mcerebrum.core.access.appinfo.AppInfo;
 import org.md2k.mcerebrum.core.access.serverinfo.ServerCP;
 import org.md2k.mcerebrum.core.access.studyinfo.StudyCP;
 import org.md2k.mcerebrum.system.update.Update;
+import org.md2k.studywithema.configuration.ConfigManager;
 import org.md2k.studywithema.menu.MyMenu;
 import org.md2k.studywithema.menu.ResponseCallBack;
 
+import es.dmoral.toasty.Toasty;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
@@ -162,7 +165,11 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                     finish();
                     break;
                 case MyMenu.MENU_SETTINGS:
-                    settings();
+
+                    String password=getPassword();
+                    if(password==null || password.length()==0)
+                        settings();
+                    else settingsWithPassword(password);
                     break;
                 case MyMenu.MENU_HELP:
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new FragmentHelp()).commitAllowingStateLoss();
@@ -224,7 +231,7 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
 
     public void settings() {
         boolean start = AppInfo.isServiceRunning(this, ServiceStudy.class.getName());
-        if (start)
+        if (start) {
             Dialog.simple(this, "Settings", "Do you want to stop data collection and open settings?", "Yes", "Cancel", new DialogCallback() {
                 @Override
                 public void onSelected(String value) {
@@ -242,6 +249,7 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                     }
                 }
             }).show();
+        }
         else {
             StudyCP.setStarted(AbstractActivityMenu.this, false);
             Intent launchIntent = getPackageManager().getLaunchIntentForPackage("org.md2k.mcerebrum");
@@ -249,6 +257,26 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
             finish();
         }
     }
+    public void settingsWithPassword(final String password) {
+        Dialog.editbox(this, "Settings", "Enter Password", new DialogCallback() {
+            @Override
+            public void onSelected(String value) {
+                if(password.equals(value)){
+                    Intent intent = new Intent(AbstractActivityMenu.this, ServiceStudy.class);
+                    stopService(intent);
+                    StudyCP.setStarted(AbstractActivityMenu.this, false);
+                    Intent launchIntent = getPackageManager().getLaunchIntentForPackage("org.md2k.mcerebrum");
+                    startActivity(launchIntent);
+                    finish();
+
+                }else{
+                    Toasty.error(AbstractActivityMenu.this, "Error: Incorrect password", Toast.LENGTH_SHORT).show();
+                    updateMenu();
+                }
+            }
+        }).show();
+    }
+
     Runnable runnable = new Runnable() {
         @Override
         public void run() {
@@ -287,6 +315,16 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
         }
         else
             tv.setBootstrapText(new BootstrapText.Builder(this).addText("Status: ").addFontAwesomeIcon("fa_times_circle").addText(" ("+msg+")").build());
+    }
+    String getPassword(){
+        if(cConfig.ui==null) return null;
+        if(cConfig.ui.menu==null) return null;
+        for(int i=0;i<cConfig.ui.menu.length;i++)
+            if(cConfig.ui.menu[i].id.equalsIgnoreCase("settings")){
+                if(cConfig.ui.menu[i].parameter==null || cConfig.ui.menu[i].parameter.length!=2) return null;
+                return cConfig.ui.menu[i].parameter[1];
+            }
+            return null;
     }
 
 }
