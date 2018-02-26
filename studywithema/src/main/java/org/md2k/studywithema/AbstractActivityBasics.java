@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -85,20 +86,27 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
         }
 
     }
+    Runnable r = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                Log.d("abc","connect()...100");
+                DataKitAPI.getInstance(AbstractActivityBasics.this).connect(new OnConnectionListener() {
+                    @Override
+                    public void onConnected() {
+                        dataQualityStart();
+                        createMenu();
+                    }
+                });
+            } catch (DataKitException e) {
+                Toasty.error(getApplicationContext(), "StudyWithEMA ... Failed to connect datakit..", Toast.LENGTH_SHORT).show();
+                finish();
+            }
 
-    void connectDataKit() {
-        try {
-            DataKitAPI.getInstance(this).connect(new OnConnectionListener() {
-                @Override
-                public void onConnected() {
-                    dataQualityStart();
-                    createMenu();
-                }
-            });
-        } catch (DataKitException e) {
-            Toasty.error(getApplicationContext(), "StudyWithEMA ... Failed to connect datakit..", Toast.LENGTH_SHORT).show();
-            finish();
         }
+    };
+    void connectDataKit() {
+       new Handler().postDelayed(r, 2000);
     }
 
     void dataQualityStart() {
@@ -145,6 +153,7 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
         if (dataQualityManager != null)
             dataQualityManager.clear();
         try {
+            Log.d("abc","disconnect()...100");
             DataKitAPI.getInstance(this).disconnect();
         } catch (Exception e) {
 

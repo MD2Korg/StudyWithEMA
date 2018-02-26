@@ -28,8 +28,10 @@ package org.md2k.studywithema;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import org.md2k.datakitapi.DataKitAPI;
+import org.md2k.datakitapi.datatype.DataType;
 import org.md2k.datakitapi.exception.DataKitException;
 import org.md2k.datakitapi.messagehandler.OnConnectionListener;
 import org.md2k.datakitapi.source.datasource.DataSource;
@@ -76,6 +78,7 @@ public class MyMCerebrumInit extends MCerebrumInfo {
 
         dataKitAPI = DataKitAPI.getInstance(context);
         try {
+            Log.d("abc","connect()...");
             dataKitAPI.connect(new OnConnectionListener() {
                 @Override
                 public void onConnected() {
@@ -88,21 +91,30 @@ public class MyMCerebrumInit extends MCerebrumInfo {
                                 c = false;
                         }
                     }
+                    if(pc==false) c=false;
                     setResult(context, pc, c);
+                    Log.d("abc","pc="+pc+" c="+c+" disconnect()...");
                     dataKitAPI.disconnect();
                 }
             });
         } catch (DataKitException e) {
             setResult(context, true, true);
+            Log.d("abc","disconnect()...");
+            dataKitAPI.disconnect();
         }
     }
 
     private boolean isConfigured(DataSource d) {
         try {
+            Log.d("abc","isConfigured ...."+d.getType()+" "+d.getId());
             ArrayList<DataSourceClient> dsc = dataKitAPI.find(new DataSourceBuilder(d));
+            Log.d("abc","isConfigured ....find().."+dsc.size());
             if (dsc.size() == 0) return false;
+            ArrayList<DataType> t = dataKitAPI.query(dsc.get(0), 1);
+            if(t==null || t.size()==0) return false;
             return true;
         } catch (Exception e) {
+            Log.e("abc", "isConfigured...exception e="+e.toString());
             return true;
         }
     }

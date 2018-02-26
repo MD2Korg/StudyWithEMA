@@ -88,6 +88,7 @@ public class PrefsFragmentSettings extends PreferenceFragment {
         cLists = cConfig.settings.list;
 
         try {
+            Log.d("abc","connect()...10");
             DataKitAPI.getInstance(getActivity()).connect(new OnConnectionListener() {
                 @Override
                 public void onConnected() {
@@ -423,7 +424,7 @@ public class PrefsFragmentSettings extends PreferenceFragment {
 
     @Override
     public void onDestroy() {
-        Log.d("abc","onDestroy()..disconnect");
+        Log.d("abc","onDestroy()..disconnect...10");
         DataKitAPI.getInstance(getActivity()).disconnect();
         super.onDestroy();
     }
