@@ -29,7 +29,6 @@ import org.md2k.mcerebrum.core.access.appinfo.AppInfo;
 import org.md2k.mcerebrum.core.access.serverinfo.ServerCP;
 import org.md2k.mcerebrum.core.access.studyinfo.StudyCP;
 import org.md2k.mcerebrum.system.update.Update;
-import org.md2k.studywithema.configuration.ConfigManager;
 import org.md2k.studywithema.menu.MyMenu;
 import org.md2k.studywithema.menu.ResponseCallBack;
 

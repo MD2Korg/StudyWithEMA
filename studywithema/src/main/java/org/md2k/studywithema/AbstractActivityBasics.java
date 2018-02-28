@@ -17,10 +17,14 @@ import org.md2k.datakitapi.DataKitAPI;
 import org.md2k.datakitapi.exception.DataKitException;
 import org.md2k.datakitapi.messagehandler.OnConnectionListener;
 import org.md2k.datakitapi.source.datasource.DataSource;
+import org.md2k.datakitapi.time.DateTime;
 import org.md2k.mcerebrum.commons.permission.Permission;
 import org.md2k.mcerebrum.commons.permission.PermissionCallback;
 import org.md2k.mcerebrum.commons.ui.data_quality.CDataQuality;
 import org.md2k.mcerebrum.commons.ui.data_quality.DataQualityManager;
+import org.md2k.mcerebrum.commons.ui.day.ControllerDay;
+import org.md2k.mcerebrum.commons.ui.day.ModelDay;
+import org.md2k.mcerebrum.commons.ui.day.ViewDay;
 import org.md2k.mcerebrum.core.access.studyinfo.StudyCP;
 import org.md2k.mcerebrum.system.update.Update;
 import org.md2k.studywithema.configuration.CConfig;
@@ -41,6 +45,7 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
     Toolbar toolbar;
     public CConfig cConfig;
     public DataQualityManager dataQualityManager;
+    public ControllerDay controllerDay;
     Subscription subscriptionCheckUpdate;
     public boolean isServiceRunning;
     boolean hasPermission = false;
@@ -56,12 +61,22 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
         isServiceRunning=false;
         getPermission();
     }
+    void loadDay(){
+        long so, wo;
+        String sleepOffset = cConfig.ui.home_screen.day.sleep_offset;
+        String wakeupOffset = cConfig.ui.home_screen.day.wakeup_offset;
+        if(sleepOffset==null) so=0;else so= DateTime.getTimeInMillis(sleepOffset);
+        if(wakeupOffset==null) wo=0;else wo=DateTime.getTimeInMillis(wakeupOffset);
+        controllerDay = new ControllerDay(new ViewDay(this), new ModelDay(this,wo, so));
+
+    }
 
     void getPermission() {
         SharedPreferences sharedpreferences = getSharedPreferences("permission", Context.MODE_PRIVATE);
         if (sharedpreferences.getBoolean("permission", false) == true) {
             hasPermission=true;
             loadConfig();
+            loadDay();
             //checkUpdate();
             connectDataKit();
         } else {
@@ -94,7 +109,9 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
                 DataKitAPI.getInstance(AbstractActivityBasics.this).connect(new OnConnectionListener() {
                     @Override
                     public void onConnected() {
+                        Log.d("abc","AbstractActivityBasics -> DataKit connected");
                         dataQualityStart();
+                        controllerDay.start();
                         createMenu();
                     }
                 });
@@ -150,6 +167,7 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
     }
 
     void stop() {
+        controllerDay.stop();
         if (dataQualityManager != null)
             dataQualityManager.clear();
         try {

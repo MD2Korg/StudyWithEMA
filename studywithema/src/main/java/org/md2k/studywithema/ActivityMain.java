@@ -18,6 +18,7 @@ public class ActivityMain extends AbstractActivityMenu {
         if (getIntent().getBooleanExtra("background", false))
             finish();
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -38,12 +39,12 @@ public class ActivityMain extends AbstractActivityMenu {
                 break;
 
             case R.id.action_refresh:
-
-         resetDataCollection();
+                resetDataCollection();
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
+
     public void onDestroy() {
         super.onDestroy();
     }
