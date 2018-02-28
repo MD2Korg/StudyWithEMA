@@ -63,6 +63,9 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
     }
     void loadDay(){
         long so, wo;
+        controllerDay=null;
+        if(cConfig==null || cConfig.ui==null || cConfig.ui.home_screen==null || cConfig.ui.home_screen.day==null)return;
+
         String sleepOffset = cConfig.ui.home_screen.day.sleep_offset;
         String wakeupOffset = cConfig.ui.home_screen.day.wakeup_offset;
         if(sleepOffset==null) so=0;else so= DateTime.getTimeInMillis(sleepOffset);
@@ -111,7 +114,8 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
                     public void onConnected() {
                         Log.d("abc","AbstractActivityBasics -> DataKit connected");
                         dataQualityStart();
-                        controllerDay.start();
+                        if(controllerDay!=null)
+                            controllerDay.start();
                         createMenu();
                     }
                 });
@@ -167,7 +171,8 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
     }
 
     void stop() {
-        controllerDay.stop();
+        if(controllerDay!=null)
+            controllerDay.stop();
         if (dataQualityManager != null)
             dataQualityManager.clear();
         try {
