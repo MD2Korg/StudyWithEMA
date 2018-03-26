@@ -140,7 +140,7 @@ public class PrefsFragmentSettings extends PreferenceFragment {
                 time /= 60;
                 c.set(Calendar.MINUTE, (int) (time % 60));
                 time /= 60;
-                c.set(Calendar.HOUR, (int) (time % 24));
+                c.set(Calendar.HOUR_OF_DAY, (int) (time % 24));
                 return DateTime.convertTimeStampToDateTime(c.getTimeInMillis(), "h:mm aaa");
             case DATE:
                 return DateTime.convertTimeStampToDateTime(((DataTypeLong) dataType).getSample(), "dd-MMM-yyyy,  (EEEE)");

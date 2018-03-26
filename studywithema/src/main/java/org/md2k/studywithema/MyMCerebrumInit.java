@@ -94,7 +94,7 @@ public class MyMCerebrumInit extends MCerebrumInfo {
                     if(pc==false) c=false;
                     setResult(context, pc, c);
                     Log.d("abc","pc="+pc+" c="+c+" disconnect()...");
-//                    dataKitAPI.disconnect();
+                    dataKitAPI.disconnect();
                 }
             });
         } catch (DataKitException e) {

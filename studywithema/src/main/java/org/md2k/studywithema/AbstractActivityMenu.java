@@ -48,7 +48,7 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         tv = (AwesomeTextView) findViewById(R.id.textview_status);
-        handler=new Handler();
+        handler = new Handler();
     }
 
     @Override
@@ -64,7 +64,7 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
             createMenu();
             return;
         }
-        if(MyMenu.hasMenuItem(cConfig.ui.menu, MyMenu.MENU_UPDATE)) {
+        if (MyMenu.hasMenuItem(cConfig.ui.menu, MyMenu.MENU_UPDATE)) {
             int badgeValue = Update.hasUpdate(AbstractActivityMenu.this);
             if (badgeValue > 0) {
                 StringHolder a = new StringHolder(String.valueOf(badgeValue));
@@ -74,7 +74,7 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                 result.updateBadge(MyMenu.MENU_UPDATE, a);
             }
         }
-        if(MyMenu.hasMenuItem(cConfig.ui.menu, MyMenu.MENU_START_STOP_DATA_COLLECTION)) {
+        if (MyMenu.hasMenuItem(cConfig.ui.menu, MyMenu.MENU_START_STOP_DATA_COLLECTION)) {
             boolean start = AppInfo.isServiceRunning(this, ServiceStudy.class.getName());
             PrimaryDrawerItem pd = (PrimaryDrawerItem) result.getDrawerItem(MyMenu.MENU_START_STOP_DATA_COLLECTION);
             if (start == false) {
@@ -154,7 +154,9 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                         Intent ii = new Intent(AbstractActivityMenu.this, ServiceStudy.class);
                         stopService(ii);
                         StudyCP.setStarted(AbstractActivityMenu.this, false);
-                    }catch (Exception e){}
+                        isServiceRunning = false;
+                    } catch (Exception e) {
+                    }
                     Intent intent = new Intent();
                     String p = AppBasicInfo.getMCerebrum(AbstractActivityMenu.this);
 
@@ -165,8 +167,8 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                     break;
                 case MyMenu.MENU_SETTINGS:
 
-                    String password=getPassword();
-                    if(password==null || password.length()==0)
+                    String password = getPassword();
+                    if (password == null || password.length() == 0)
                         settings();
                     else settingsWithPassword(password);
                     break;
@@ -181,21 +183,18 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
             }
         }
     };
+
     public void startDataCollection() {
-        Observable.just(true).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).map(new Func1<Boolean, Boolean>() {
-            @Override
-            public Boolean call(Boolean aBoolean) {
-                if (!AppInfo.isServiceRunning(AbstractActivityMenu.this, ServiceStudy.class.getName())) {
-                    Intent intent = new Intent(AbstractActivityMenu.this, ServiceStudy.class);
-                    startService(intent);
-                }
-                StudyCP.setStarted(AbstractActivityMenu.this, true);
-                isServiceRunning=true;
-                updateMenu();
-                updateStatus();
-                return true;
-            }
-        }).subscribe();
+        if (!AppInfo.isServiceRunning(AbstractActivityMenu.this, ServiceStudy.class.getName())) {
+            Intent intent = new Intent(AbstractActivityMenu.this, ServiceStudy.class);
+            startService(intent);
+        }
+        StudyCP.setStarted(AbstractActivityMenu.this, true);
+        isServiceRunning = true;
+        try {
+            updateMenu();
+            updateStatus();
+        }catch (Exception e){}
     }
 
     public void stopDataCollection() {
@@ -206,7 +205,7 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                     Intent intent = new Intent(AbstractActivityMenu.this, ServiceStudy.class);
                     stopService(intent);
                     StudyCP.setStarted(AbstractActivityMenu.this, false);
-                    isServiceRunning=false;
+                    isServiceRunning = false;
                     updateMenu();
                     updateStatus();
                 }
@@ -221,6 +220,9 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                 if (value.equals("Yes")) {
                     Intent intent = new Intent(AbstractActivityMenu.this, ServiceStudy.class);
                     stopService(intent);
+                    StudyCP.setStarted(AbstractActivityMenu.this, false);
+                    isServiceRunning = false;
+                    connectDataKit();
                     handler.postDelayed(runnable, 3000);
                     updateMenu();
                 }
@@ -238,6 +240,7 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                         Intent intent = new Intent(AbstractActivityMenu.this, ServiceStudy.class);
                         stopService(intent);
                         StudyCP.setStarted(AbstractActivityMenu.this, false);
+                        isServiceRunning = false;
                         Intent launchIntent = getPackageManager().getLaunchIntentForPackage("org.md2k.mcerebrum");
                         startActivity(launchIntent);
                         finish();
@@ -248,27 +251,28 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                     }
                 }
             }).show();
-        }
-        else {
+        } else {
             StudyCP.setStarted(AbstractActivityMenu.this, false);
             Intent launchIntent = getPackageManager().getLaunchIntentForPackage("org.md2k.mcerebrum");
             startActivity(launchIntent);
             finish();
         }
     }
+
     public void settingsWithPassword(final String password) {
         Dialog.editbox(this, "Settings", "Enter Password", new DialogCallback() {
             @Override
             public void onSelected(String value) {
-                if(password.equals(value)){
+                if (password.equals(value)) {
                     Intent intent = new Intent(AbstractActivityMenu.this, ServiceStudy.class);
                     stopService(intent);
                     StudyCP.setStarted(AbstractActivityMenu.this, false);
+                    isServiceRunning = false;
                     Intent launchIntent = getPackageManager().getLaunchIntentForPackage("org.md2k.mcerebrum");
                     startActivity(launchIntent);
                     finish();
 
-                }else{
+                } else {
                     Toasty.error(AbstractActivityMenu.this, "Error: Incorrect password", Toast.LENGTH_SHORT).show();
                     updateMenu();
                 }
@@ -282,48 +286,51 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
             startDataCollection();
         }
     };
+
     @Override
-    public void onResume(){
-        if(hasPermission) updateStatus();
+    public void onResume() {
+        if (hasPermission) updateStatus();
         super.onResume();
     }
-    void updateStatus(){
-        if(!isServiceRunning) {
+
+    void updateStatus() {
+        if (!isServiceRunning) {
             updateStatus("Data collection off", DefaultBootstrapBrand.DANGER, false);
             NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            notificationManager.notify(ServiceStudy.NOTIFY_ID, ServiceStudy.getCompatNotification(this,"Data Collection - OFF (click to start)"));
-        }else{
+            notificationManager.notify(ServiceStudy.NOTIFY_ID, ServiceStudy.getCompatNotification(this, "Data Collection - OFF (click to start)"));
+        } else {
             updateStatus(null, DefaultBootstrapBrand.SUCCESS, true);
             NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            notificationManager.notify(ServiceStudy.NOTIFY_ID, ServiceStudy.getCompatNotification(this,"Data Collection - ON"));
+            notificationManager.notify(ServiceStudy.NOTIFY_ID, ServiceStudy.getCompatNotification(this, "Data Collection - ON"));
         }
 
     }
 
-    void updateStatus(String msg, BootstrapBrand brand, boolean isSuccess){
+    void updateStatus(String msg, BootstrapBrand brand, boolean isSuccess) {
 
         tv.setBootstrapBrand(brand);
-        if(isSuccess) {
-            int uNo= Update.hasUpdate(this);
-            if(uNo==0)
+        if (isSuccess) {
+            int uNo = Update.hasUpdate(this);
+            if (uNo == 0)
                 tv.setBootstrapText(new BootstrapText.Builder(this).addText("Status: ").addFontAwesomeIcon("fa_check_circle").build());
             else {
                 tv.setBootstrapBrand(DefaultBootstrapBrand.WARNING);
                 tv.setBootstrapText(new BootstrapText.Builder(this).addText("Status: ").addFontAwesomeIcon("fa_check_circle").addText(" (Update Available)").build());
             }
-        }
-        else
-            tv.setBootstrapText(new BootstrapText.Builder(this).addText("Status: ").addFontAwesomeIcon("fa_times_circle").addText(" ("+msg+")").build());
+        } else
+            tv.setBootstrapText(new BootstrapText.Builder(this).addText("Status: ").addFontAwesomeIcon("fa_times_circle").addText(" (" + msg + ")").build());
     }
-    String getPassword(){
-        if(cConfig.ui==null) return null;
-        if(cConfig.ui.menu==null) return null;
-        for(int i=0;i<cConfig.ui.menu.length;i++)
-            if(cConfig.ui.menu[i].id.equalsIgnoreCase("settings")){
-                if(cConfig.ui.menu[i].parameter==null || cConfig.ui.menu[i].parameter.length!=2) return null;
+
+    String getPassword() {
+        if (cConfig.ui == null) return null;
+        if (cConfig.ui.menu == null) return null;
+        for (int i = 0; i < cConfig.ui.menu.length; i++)
+            if (cConfig.ui.menu[i].id.equalsIgnoreCase("settings")) {
+                if (cConfig.ui.menu[i].parameter == null || cConfig.ui.menu[i].parameter.length != 2)
+                    return null;
                 return cConfig.ui.menu[i].parameter[1];
             }
-            return null;
+        return null;
     }
 
 }

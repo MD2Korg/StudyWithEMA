@@ -2,6 +2,7 @@ package org.md2k.studywithema;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -9,12 +10,10 @@ import rx.Subscription;
 
 
 public class ActivityMain extends AbstractActivityMenu {
-    Subscription subscriptionCheckUpdate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        startDataCollection();
         if (getIntent().getBooleanExtra("background", false))
             finish();
     }

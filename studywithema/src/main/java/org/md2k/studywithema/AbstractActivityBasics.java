@@ -1,10 +1,13 @@
 package org.md2k.studywithema;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -26,19 +29,12 @@ import org.md2k.mcerebrum.commons.ui.day.ControllerDay;
 import org.md2k.mcerebrum.commons.ui.day.ModelDay;
 import org.md2k.mcerebrum.commons.ui.day.ViewDay;
 import org.md2k.mcerebrum.core.access.studyinfo.StudyCP;
-import org.md2k.mcerebrum.system.update.Update;
 import org.md2k.studywithema.configuration.CConfig;
 import org.md2k.studywithema.configuration.ConfigManager;
-import org.md2k.studywithema.menu.MyMenu;
 
 import java.util.ArrayList;
 
 import es.dmoral.toasty.Toasty;
-import rx.Observable;
-import rx.Observer;
-import rx.Subscription;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 
 public abstract class AbstractActivityBasics extends AppCompatActivity {
     static final String TAG = AbstractActivityBasics.class.getSimpleName();
@@ -46,42 +42,52 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
     public CConfig cConfig;
     public DataQualityManager dataQualityManager;
     public ControllerDay controllerDay;
-    Subscription subscriptionCheckUpdate;
     public boolean isServiceRunning;
     boolean hasPermission = false;
+    Handler handlerDataKit;
 
     abstract void createMenu();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        handlerDataKit = new Handler();
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(DataKitException.class.getSimpleName()));
         setContentView(R.layout.activity_main);
         Utils.init(this);
         loadToolbar();
-        isServiceRunning=false;
+        isServiceRunning = false;
         getPermission();
     }
-    void loadDay(){
+    public abstract void startDataCollection();
+
+    void loadDay() {
         long so, wo;
-        controllerDay=null;
-        if(cConfig==null || cConfig.ui==null || cConfig.ui.home_screen==null || cConfig.ui.home_screen.day==null)return;
+        controllerDay = null;
+        if (cConfig == null || cConfig.ui == null || cConfig.ui.home_screen == null || cConfig.ui.home_screen.day == null)
+            return;
 
         String sleepOffset = cConfig.ui.home_screen.day.sleep_offset;
         String wakeupOffset = cConfig.ui.home_screen.day.wakeup_offset;
-        if(sleepOffset==null) so=0;else so= DateTime.getTimeInMillis(sleepOffset);
-        if(wakeupOffset==null) wo=0;else wo=DateTime.getTimeInMillis(wakeupOffset);
-        controllerDay = new ControllerDay(new ViewDay(this), new ModelDay(this,wo, so));
+        if (sleepOffset == null) so = 0;
+        else so = DateTime.getTimeInMillis(sleepOffset);
+        if (wakeupOffset == null) wo = 0;
+        else wo = DateTime.getTimeInMillis(wakeupOffset);
+        controllerDay = new ControllerDay(this, new ViewDay(this), new ModelDay(this, wo, so));
 
     }
 
     void getPermission() {
         SharedPreferences sharedpreferences = getSharedPreferences("permission", Context.MODE_PRIVATE);
         if (sharedpreferences.getBoolean("permission", false) == true) {
-            hasPermission=true;
+            hasPermission = true;
             loadConfig();
             loadDay();
             //checkUpdate();
             connectDataKit();
+            startDataCollection();
+
         } else {
             Permission.requestPermission(this, new PermissionCallback() {
                 @Override
@@ -94,47 +100,62 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
                         Toasty.error(getApplicationContext(), "StudyWithEMA ... !PERMISSION DENIED !!! Could not continue...", Toast.LENGTH_SHORT).show();
                         finish();
                     } else {
-                        hasPermission=true;
+                        hasPermission = true;
                         loadConfig();
+                        loadDay();
 //                        checkUpdate();
                         connectDataKit();
+                        startDataCollection();
                     }
                 }
             });
         }
 
     }
-    Runnable r = new Runnable() {
+
+    Runnable runnableDataKit = new Runnable() {
         @Override
         public void run() {
             try {
-                Log.d("abc","connect()...100");
+                Log.d("abc", "connect()...100");
+                if (DataKitAPI.getInstance(AbstractActivityBasics.this).isConnected()) {
+                    if (controllerDay != null)
+                        controllerDay.stop();
+                    if (dataQualityManager != null)
+                        dataQualityManager.clear();
+                    dataQualityStart();
+                    if (controllerDay != null)
+                        controllerDay.start();
+                    return;
+                }
                 DataKitAPI.getInstance(AbstractActivityBasics.this).connect(new OnConnectionListener() {
                     @Override
                     public void onConnected() {
-                        Log.d("abc","AbstractActivityBasics -> DataKit connected");
+                        Log.d("abc", "AbstractActivityBasics -> DataKit connected");
                         dataQualityStart();
-                        if(controllerDay!=null)
+                        if (controllerDay != null)
                             controllerDay.start();
                         createMenu();
                     }
                 });
+                handlerDataKit.postDelayed(this, 5000);
             } catch (DataKitException e) {
                 Toasty.error(getApplicationContext(), "StudyWithEMA ... Failed to connect datakit..", Toast.LENGTH_SHORT).show();
                 finish();
             }
-
         }
     };
-    void connectDataKit() {
-       new Handler().postDelayed(r, 2000);
+
+    public void connectDataKit() {
+        handlerDataKit.removeCallbacks(runnableDataKit);
+        handlerDataKit.postDelayed(runnableDataKit,3000);
     }
 
     void dataQualityStart() {
-        ArrayList<DataSource> dataSources=new ArrayList<>();
-        CDataQuality[] cDataQualities=cConfig.ui.home_screen.data_quality;
-        if (cDataQualities == null || cDataQualities.length==0) return;
-        for(int i=0;i<cDataQualities.length;i++){
+        ArrayList<DataSource> dataSources = new ArrayList<>();
+        CDataQuality[] cDataQualities = cConfig.ui.home_screen.data_quality;
+        if (cDataQualities == null || cDataQualities.length == 0) return;
+        for (int i = 0; i < cDataQualities.length; i++) {
             dataSources.add(cDataQualities[i].read);
         }
         dataQualityManager = new DataQualityManager();
@@ -170,13 +191,14 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
         }
     }
 
-    void stop() {
-        if(controllerDay!=null)
+    void disconnectDataKit() {
+        handlerDataKit.removeCallbacks(runnableDataKit);
+        if (controllerDay != null)
             controllerDay.stop();
         if (dataQualityManager != null)
             dataQualityManager.clear();
         try {
-            Log.d("abc","disconnect()...100");
+            Log.d("abc", "disconnect()...100");
             DataKitAPI.getInstance(this).disconnect();
         } catch (Exception e) {
 
@@ -185,41 +207,24 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
 
     @Override
     public void onDestroy() {
-        stop();
-        if (subscriptionCheckUpdate != null && !subscriptionCheckUpdate.isUnsubscribed())
-            subscriptionCheckUpdate.unsubscribe();
-
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        disconnectDataKit();
         super.onDestroy();
     }
 
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get extra data included in the Intent
+            disconnectDataKit();
+            connectDataKit();
+            String message = intent.getStringExtra("message");
+            Log.d("receiver", "Got message: " + message);
+        }
+    };
+
     public String getStudyName() {
         return StudyCP.getTitle(this);
-    }
-    public void checkUpdate(){
-        if(MyMenu.hasMenuItem(cConfig.ui.menu, MyMenu.MENU_UPDATE)) {
-            subscriptionCheckUpdate = Observable.just(true).subscribeOn(Schedulers.newThread())
-                    .observeOn(Schedulers.newThread())
-                    .flatMap(new Func1<Boolean, Observable<Boolean>>() {
-                        @Override
-                        public Observable<Boolean> call(Boolean aBoolean) {
-                            return Update.checkUpdate(AbstractActivityBasics.this);
-                        }
-                    }).subscribe(new Observer<Boolean>() {
-                        @Override
-                        public void onCompleted() {
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-                            Log.d("abc", "abeeee");
-                        }
-
-                        @Override
-                        public void onNext(Boolean aBoolean) {
-                        }
-                    });
-        }
-
     }
 
 }

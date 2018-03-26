@@ -12,15 +12,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
-import org.md2k.datakitapi.time.DateTime;
 import org.md2k.mcerebrum.commons.storage.Storage;
 import org.md2k.mcerebrum.commons.ui.buttons.ViewButtons;
 import org.md2k.mcerebrum.commons.ui.data_quality.CDataQuality;
 import org.md2k.mcerebrum.commons.ui.data_quality.ResultCallback;
 import org.md2k.mcerebrum.commons.ui.data_quality.UserViewDataQuality;
 import org.md2k.mcerebrum.commons.ui.data_quality.ViewDataQuality;
-import org.md2k.mcerebrum.commons.ui.day.ControllerDay;
-import org.md2k.mcerebrum.commons.ui.day.ModelDay;
 import org.md2k.mcerebrum.commons.ui.day.ViewDay;
 import org.md2k.mcerebrum.commons.ui.privacy.UserViewPrivacyControl;
 import org.md2k.mcerebrum.commons.ui.privacy.ViewPrivacy;
@@ -115,12 +112,14 @@ public class FragmentHome extends Fragment {
     }
 
     void loadDay(View view) {
-        LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.linear_layout_add);
-        ViewDay viewDay = ((ActivityMain) getActivity()).controllerDay.getViewDay();
-        if (viewDay.getParent() != null)
-            ((ViewGroup)viewDay.getParent()).removeView(viewDay);
+        try {
+            LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.linear_layout_add);
+            ViewDay viewDay = ((ActivityMain) getActivity()).controllerDay.getViewDay();
+            if (viewDay.getParent() != null)
+                ((ViewGroup) viewDay.getParent()).removeView(viewDay);
             //linearLayout.removeView(viewDay);
-        linearLayout.addView(viewDay);
+            linearLayout.addView(viewDay);
+        }catch (Exception e){}
     }
 
     @Override
