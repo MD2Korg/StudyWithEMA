@@ -3,8 +3,11 @@ package org.md2k.studywithema;
 import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
 
@@ -24,13 +27,17 @@ import com.mikepenz.materialdrawer.model.interfaces.Nameable;
 
 import org.md2k.mcerebrum.commons.dialog.Dialog;
 import org.md2k.mcerebrum.commons.dialog.DialogCallback;
+import org.md2k.mcerebrum.commons.storage.Storage;
 import org.md2k.mcerebrum.core.access.appinfo.AppBasicInfo;
 import org.md2k.mcerebrum.core.access.appinfo.AppInfo;
 import org.md2k.mcerebrum.core.access.serverinfo.ServerCP;
 import org.md2k.mcerebrum.core.access.studyinfo.StudyCP;
 import org.md2k.mcerebrum.system.update.Update;
+import org.md2k.studywithema.configuration.ConfigManager;
 import org.md2k.studywithema.menu.MyMenu;
 import org.md2k.studywithema.menu.ResponseCallBack;
+
+import java.io.File;
 
 import es.dmoral.toasty.Toasty;
 import rx.Observable;
@@ -75,9 +82,8 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
             }
         }
         if (MyMenu.hasMenuItem(cConfig.ui.menu, MyMenu.MENU_START_STOP_DATA_COLLECTION)) {
-            boolean start = AppInfo.isServiceRunning(this, ServiceStudy.class.getName());
             PrimaryDrawerItem pd = (PrimaryDrawerItem) result.getDrawerItem(MyMenu.MENU_START_STOP_DATA_COLLECTION);
-            if (start == false) {
+            if (!isServiceRunning()) {
                 pd = pd.withName("Start Data Collection").withIcon(FontAwesome.Icon.faw_play_circle_o);
             } else {
                 pd = pd.withName("Stop Data Collection").withIcon(FontAwesome.Icon.faw_pause_circle_o);
@@ -87,14 +93,24 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
             result.addItemAtPosition(pd, pos);
         }
     }
+    private boolean isServiceRunning(){
+        return AppInfo.isServiceRunning(this, ServiceStudy.class.getName());
+    }
 
     void createDrawer() {
+        Drawable drawable = ContextCompat.getDrawable(this, R.drawable.mcerebrum_white);
+        try {
+            if (cConfig.ui.icon != null) {
+                drawable = Drawable.createFromPath(ConfigManager.getConfigDirectory() + cConfig.ui.icon);
+            }
+        }catch (Exception e){}
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         AccountHeader headerResult = new AccountHeaderBuilder()
                 .withActivity(this)
                 .withHeaderBackground(R.drawable.cover_image4)
                 .withCompactStyle(true)
-                .addProfiles(new MyMenu().getHeaderContent(ServerCP.getUserName(getBaseContext()), responseCallBack))
+                .addProfiles(new MyMenu().getHeaderContent(ServerCP.getUserName(getBaseContext()), drawable, responseCallBack))
+//                .addProfiles(new MyMenu().getHeaderContent(ServerCP.getUserName(getBaseContext()), responseCallBack))
                 .build();
         result = new DrawerBuilder()
                 .withActivity(this)
@@ -123,16 +139,16 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
         public void onResponse(final IDrawerItem drawerItem, final int responseId) {
 //            if(selectedMenu==responseId) return;
             selectedMenu = responseId;
-            if (drawerItem != null)
-                toolbar.setTitle(getStudyName() + ": " + ((Nameable) drawerItem).getName().getText(AbstractActivityMenu.this));
-            else toolbar.setTitle(getStudyName());
+//            if (drawerItem != null)
+//                toolbar.setTitle(getStudyName() + ": " + ((Nameable) drawerItem).getName().getText(AbstractActivityMenu.this));
+            toolbar.setTitle(getStudyName());
             switch (responseId) {
                 case MyMenu.MENU_HOME:
                     result.setSelection(MyMenu.MENU_HOME, false);
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new FragmentHome()).commitAllowingStateLoss();
                     break;
                 case MyMenu.MENU_START_STOP_DATA_COLLECTION:
-                    if (AppInfo.isServiceRunning(AbstractActivityMenu.this, ServiceStudy.class.getName())) {
+                    if (isServiceRunning()) {
                         stopDataCollection();
                     } else {
                         startDataCollection();
@@ -141,7 +157,7 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                     toolbar.setTitle(getStudyName());
                     break;
                 case MyMenu.MENU_RESET:
-                    if (AppInfo.isServiceRunning(AbstractActivityMenu.this, ServiceStudy.class.getName())) {
+                    if (isServiceRunning()) {
                         resetDataCollection();
                     } else {
                         startDataCollection();
@@ -154,7 +170,6 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                         Intent ii = new Intent(AbstractActivityMenu.this, ServiceStudy.class);
                         stopService(ii);
                         StudyCP.setStarted(AbstractActivityMenu.this, false);
-                        isServiceRunning = false;
                     } catch (Exception e) {
                     }
                     Intent intent = new Intent();
@@ -178,19 +193,27 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                 case MyMenu.MENU_CONTACT_US:
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new FragmentContactUs()).commitAllowingStateLoss();
                     break;
+                case MyMenu.MENU_TUTORIAL:
+                    openPDF();
 
                 default:
             }
         }
     };
+    private void openPDF() {
+        Intent intent = new Intent();
+        intent.setPackage("com.adobe.reader");
+        File file = new File(ConfigManager.getConfigDirectory() + "tutorial.pdf");
+        intent.setDataAndType(Uri.fromFile(file), "application/pdf");
+        startActivity(intent);
+    }
 
     public void startDataCollection() {
-        if (!AppInfo.isServiceRunning(AbstractActivityMenu.this, ServiceStudy.class.getName())) {
+        if (!isServiceRunning()) {
             Intent intent = new Intent(AbstractActivityMenu.this, ServiceStudy.class);
             startService(intent);
         }
         StudyCP.setStarted(AbstractActivityMenu.this, true);
-        isServiceRunning = true;
         try {
             updateMenu();
             updateStatus();
@@ -205,7 +228,6 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                     Intent intent = new Intent(AbstractActivityMenu.this, ServiceStudy.class);
                     stopService(intent);
                     StudyCP.setStarted(AbstractActivityMenu.this, false);
-                    isServiceRunning = false;
                     updateMenu();
                     updateStatus();
                 }
@@ -221,7 +243,6 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                     Intent intent = new Intent(AbstractActivityMenu.this, ServiceStudy.class);
                     stopService(intent);
                     StudyCP.setStarted(AbstractActivityMenu.this, false);
-                    isServiceRunning = false;
                     connectDataKit();
                     handler.postDelayed(runnable, 3000);
                     updateMenu();
@@ -231,8 +252,7 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
     }
 
     public void settings() {
-        boolean start = AppInfo.isServiceRunning(this, ServiceStudy.class.getName());
-        if (start) {
+        if (isServiceRunning()) {
             Dialog.simple(this, "Settings", "Do you want to stop data collection and open settings?", "Yes", "Cancel", new DialogCallback() {
                 @Override
                 public void onSelected(String value) {
@@ -240,7 +260,6 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                         Intent intent = new Intent(AbstractActivityMenu.this, ServiceStudy.class);
                         stopService(intent);
                         StudyCP.setStarted(AbstractActivityMenu.this, false);
-                        isServiceRunning = false;
                         Intent launchIntent = getPackageManager().getLaunchIntentForPackage("org.md2k.mcerebrum");
                         startActivity(launchIntent);
                         finish();
@@ -267,7 +286,6 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
                     Intent intent = new Intent(AbstractActivityMenu.this, ServiceStudy.class);
                     stopService(intent);
                     StudyCP.setStarted(AbstractActivityMenu.this, false);
-                    isServiceRunning = false;
                     Intent launchIntent = getPackageManager().getLaunchIntentForPackage("org.md2k.mcerebrum");
                     startActivity(launchIntent);
                     finish();
@@ -294,7 +312,7 @@ public abstract class AbstractActivityMenu extends AbstractActivityBasics {
     }
 
     void updateStatus() {
-        if (!isServiceRunning) {
+        if (!isServiceRunning()) {
             updateStatus("Data collection off", DefaultBootstrapBrand.DANGER, false);
             NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             notificationManager.notify(ServiceStudy.NOTIFY_ID, ServiceStudy.getCompatNotification(this, "Data Collection - OFF (click to start)"));

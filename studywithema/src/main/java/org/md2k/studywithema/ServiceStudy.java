@@ -81,6 +81,7 @@ public class ServiceStudy extends Service {
                 .map(new Func1<Long, Boolean>() {
                     @Override
                     public Boolean call(Long aLong) {
+                        Log.d("abc","watchdog()...running...");
                         start();
                         checkUpdateIfNecessary();
                         updateNotification();
@@ -93,6 +94,7 @@ public class ServiceStudy extends Service {
 
                     @Override
                     public void onError(Throwable e) {
+                        Log.d("abc","watchdog error().."+e.toString());
                         stop();
                     }
 
@@ -145,6 +147,7 @@ public class ServiceStudy extends Service {
         return builder.build();
     }
     void stop(){
+        Log.d("abc","service stop()...");
         for(int i=0;i<packageNames.size();i++){
             if(!AppAccess.getMCerebrumSupported(this, packageNames.get(i))) continue;
             if(packageNames.get(i).equals(study)) continue;

@@ -42,7 +42,6 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
     public CConfig cConfig;
     public DataQualityManager dataQualityManager;
     public ControllerDay controllerDay;
-    public boolean isServiceRunning;
     boolean hasPermission = false;
     Handler handlerDataKit;
 
@@ -51,13 +50,13 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        dataQualityManager = new DataQualityManager();
         handlerDataKit = new Handler();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(DataKitException.class.getSimpleName()));
         setContentView(R.layout.activity_main);
         Utils.init(this);
         loadToolbar();
-        isServiceRunning = false;
         getPermission();
     }
     public abstract void startDataCollection();
@@ -118,11 +117,10 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
         public void run() {
             try {
                 Log.d("abc", "connect()...100");
+                if (controllerDay != null)
+                    controllerDay.stop();
+                dataQualityStop();
                 if (DataKitAPI.getInstance(AbstractActivityBasics.this).isConnected()) {
-                    if (controllerDay != null)
-                        controllerDay.stop();
-                    if (dataQualityManager != null)
-                        dataQualityManager.clear();
                     dataQualityStart();
                     if (controllerDay != null)
                         controllerDay.start();
@@ -138,7 +136,7 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
                         createMenu();
                     }
                 });
-                handlerDataKit.postDelayed(this, 5000);
+//                handlerDataKit.postDelayed(this, 5000);
             } catch (DataKitException e) {
                 Toasty.error(getApplicationContext(), "StudyWithEMA ... Failed to connect datakit..", Toast.LENGTH_SHORT).show();
                 finish();
@@ -150,15 +148,21 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
         handlerDataKit.removeCallbacks(runnableDataKit);
         handlerDataKit.postDelayed(runnableDataKit,3000);
     }
+    void dataQualityStop(){
+        if (dataQualityManager != null)
+            dataQualityManager.clear();
+    }
 
     void dataQualityStart() {
         ArrayList<DataSource> dataSources = new ArrayList<>();
         CDataQuality[] cDataQualities = cConfig.ui.home_screen.data_quality;
-        if (cDataQualities == null || cDataQualities.length == 0) return;
+        if (cDataQualities == null || cDataQualities.length == 0){
+            Log.d("abc","dataQuaityStart()...length=0");
+            return;
+        }
         for (int i = 0; i < cDataQualities.length; i++) {
             dataSources.add(cDataQualities[i].read);
         }
-        dataQualityManager = new DataQualityManager();
         dataQualityManager.set(AbstractActivityBasics.this, dataSources);
     }
 
@@ -193,10 +197,10 @@ public abstract class AbstractActivityBasics extends AppCompatActivity {
 
     void disconnectDataKit() {
         handlerDataKit.removeCallbacks(runnableDataKit);
-        if (controllerDay != null)
+        if (controllerDay != null) {
             controllerDay.stop();
-        if (dataQualityManager != null)
-            dataQualityManager.clear();
+        }
+        dataQualityStop();
         try {
             Log.d("abc", "disconnect()...100");
             DataKitAPI.getInstance(this).disconnect();

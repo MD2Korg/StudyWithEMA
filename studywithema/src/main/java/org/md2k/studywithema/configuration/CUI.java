@@ -27,6 +27,7 @@ package org.md2k.studywithema.configuration;
  */
 
 public class CUI {
+    public String icon;
     public CMenu[] menu;
     public CHomeScreen home_screen;
     public CHelp help;

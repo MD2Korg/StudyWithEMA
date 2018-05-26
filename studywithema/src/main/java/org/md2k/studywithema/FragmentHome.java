@@ -55,14 +55,14 @@ public class FragmentHome extends Fragment {
         final CButton cButton = ((ActivityMain) getActivity()).cConfig.ui.home_screen.button;
         if (cButton == null || cButton.list == null || cButton.list.length == 0) return;
         LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.linear_layout_add);
-        final ViewButtons viewButtons = new ViewButtons(getActivity());
+        final ViewButtons viewButtons = new ViewButtons(getActivity(), cButton.column);
         LinearLayout.LayoutParams LLParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         viewButtons.setLayoutParams(LLParams);
         linearLayout.addView(viewButtons);
         for (int i = 0; i < cButton.list.length; i++) {
             Drawable d = Storage.readDrawable(ConfigManager.getConfigDirectory() + cButton.list[i].icon);
-            if (d == null)
-                d = ContextCompat.getDrawable(getActivity(), R.drawable.ic_error_outline_white_48dp);
+//            if (d == null)
+//                d = ContextCompat.getDrawable(getActivity(), R.drawable.ic_error_outline_white_48dp);
             final int finalI = i;
             viewButtons.addButton(i + 1, cButton.list[i].title, d, new View.OnClickListener() {
                 @Override

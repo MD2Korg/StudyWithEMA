@@ -27,5 +27,6 @@ package org.md2k.studywithema.configuration;
  */
 
 public class CButton {
+    public int column;
     public CButtonList[] list;
 }

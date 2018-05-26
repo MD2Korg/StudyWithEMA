@@ -27,6 +27,7 @@ package org.md2k.studywithema.menu;
  */
 
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
@@ -53,6 +54,7 @@ public class MyMenu {
     public static final int MENU_UPDATE=4;
     public static final int MENU_HELP = 5;
     public static final int MENU_CONTACT_US=6;
+    public static final int MENU_TUTORIAL=7;
     public static final String MENU_HOME_STR="HOME";
     public static final String MENU_SETTINGS_STR="SETTINGS";
     public static final String MENU_START_STOP_DATA_COLLECTION_STR="START_STOP_DATA_COLLECTION";
@@ -60,12 +62,18 @@ public class MyMenu {
     public static final String MENU_UPDATE_STR ="UPDATE";
     public static final String MENU_HELP_STR="HELP";
     public static final String MENU_CONTACT_US_STR="CONTACT_US";
+    public static final String MENU_TUTORIAL_STR = "TUTORIAL";
 
 //    abstract IProfile[] getHeaderContentType(final Context context, UserInfo userInfo, StudyInfo studyInfo, final ResponseCallBack responseCallBack);
 
     public IProfile[] getHeaderContent(String userTitle, /*UserInfo userInfo, StudyInfo studyInfo, */final ResponseCallBack responseCallBack) {
         IProfile[] iProfiles=new IProfile[1];
         iProfiles[0]=new ProfileDrawerItem().withName(userTitle).withIcon(R.drawable.mcerebrum_white);
+        return iProfiles;
+    }
+    public IProfile[] getHeaderContent(String userTitle, Drawable drawable, final ResponseCallBack responseCallBack) {
+        IProfile[] iProfiles=new IProfile[1];
+        iProfiles[0]=new ProfileDrawerItem().withName(userTitle).withIcon(drawable);
         return iProfiles;
     }
     private static MenuContent[] getMenuContent(CMenu[] cMenu){
@@ -85,7 +93,8 @@ public class MyMenu {
                 menuContents[i]=new MenuContent(cMenu[i].title, FontAwesome.Icon.faw_question, MenuContent.PRIMARY_DRAWER_ITEM, MENU_HELP,0);
             else if(cMenu[i].id.equalsIgnoreCase(MENU_CONTACT_US_STR))
                 menuContents[i]=new MenuContent(cMenu[i].title, FontAwesome.Icon.faw_envelope_o, MenuContent.PRIMARY_DRAWER_ITEM, MENU_CONTACT_US,0);
-
+            else if(cMenu[i].id.equalsIgnoreCase(MENU_TUTORIAL_STR))
+                menuContents[i]=new MenuContent(cMenu[i].title, FontAwesome.Icon.faw_book, MenuContent.PRIMARY_DRAWER_ITEM, MENU_TUTORIAL,0);
         }
         return menuContents;
     }
